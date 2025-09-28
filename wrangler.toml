@@ -2,15 +2,15 @@ name = "my-message-board"
 type = "javascript"
 
 account_id = "4817ff23520be0f051961908aa84bd58"
-compatibility_date = "2025-09-28"
+compatibility_date = "2025-09-29"
 
 [functions]
 directory = "functions"
 
 [vars]
-D1_DATABASE_ID = "ec0e1e7d-c132-4ed9-b7ac-cf73f7662955"
+D1_DATABASE_ID = "172d899b-c9c3-4c86-bbcb-d36a15bac71a"
 
 [bindings]
 type = "d1_database"
 name = "D1_DATABASE"
-database_name = "ec0e1e7d-c132-4ed9-b7ac-cf73f7662955"
+database_name = "172d899b-c9c3-4c86-bbcb-d36a15bac71a"
