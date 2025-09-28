@@ -8,9 +8,9 @@ compatibility_date = "2025-09-28"
 directory = "functions"
 
 [vars]
-D1_DATABASE_ID = "ec0e1e7d-c132-4ed9-b7ac-cf73f7662955"
+D1_DATABASE_ID = "7da24f38-edd6-43dc-b43c-905d2ed0f4e9"
 
 [bindings]
 type = "d1_database"
 name = "D1_DATABASE"
-database_name = "ec0e1e7d-c132-4ed9-b7ac-cf73f7662955"
+database_name = "7da24f38-edd6-43dc-b43c-905d2ed0f4e9"
