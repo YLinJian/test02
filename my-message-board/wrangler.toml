@@ -1,16 +1,16 @@
 name = "my-message-board"
 type = "javascript"
 
-account_id = "你的Cloudflare账号ID"
+account_id = "4817ff23520be0f051961908aa84bd58"
 compatibility_date = "2025-09-28"
 
 [functions]
 directory = "functions"
 
 [vars]
-D1_DATABASE_ID = "你的D1数据库ID"
+D1_DATABASE_ID = "ec0e1e7d-c132-4ed9-b7ac-cf73f7662955"
 
 [bindings]
 type = "d1_database"
 name = "D1_DATABASE"
-database_name = "你的D1数据库ID"
+database_name = "ec0e1e7d-c132-4ed9-b7ac-cf73f7662955"
