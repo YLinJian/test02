@@ -1,0 +1,16 @@
+name = "my-message-board"
+type = "javascript"
+
+account_id = "你的Cloudflare账号ID"
+compatibility_date = "2025-09-28"
+
+[functions]
+directory = "functions"
+
+[vars]
+D1_DATABASE_ID = "你的D1数据库ID"
+
+[bindings]
+type = "d1_database"
+name = "D1_DATABASE"
+database_name = "你的D1数据库ID"
