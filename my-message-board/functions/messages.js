@@ -13,6 +13,7 @@ export async function onRequest(context) {
   const { request, env, url } = context;
   const db = env.D1_DATABASE;
 
+  // 自动初始化表
   await initTable(db);
 
   if (request.method === "GET") {
