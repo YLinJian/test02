@@ -2,7 +2,7 @@ name = "my-message-board"
 type = "javascript"
 
 account_id = "4817ff23520be0f051961908aa84bd58"
-compatibility_date = "2025-09-28"
+compatibility_date = "2025-09-29"
 
 [functions]
 directory = "functions"
