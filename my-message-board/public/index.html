@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+  <meta charset="UTF-8">
+  <title>留言板</title>
+  <style>
+    body { font-family: Arial; padding: 2rem; max-width: 600px; margin: auto; }
+    input, textarea { width: 100%; margin-bottom: 1rem; padding: 0.5rem; }
+    button { padding: 0.5rem 1rem; margin-right: 0.5rem; }
+    .message { border-bottom: 1px solid #ccc; padding: 0.5rem 0; }
+    .name { font-weight: bold; }
+    .time { font-size: 0.8rem; color: gray; }
+    .pagination { margin-top: 1rem; }
+  </style>
+</head>
+<body>
+  <h1>留言板</h1>
+
+  <div>
+    <input type="text" id="name" placeholder="你的名字">
+    <textarea id="message" placeholder="写点什么..."></textarea>
+    <button onclick="submitMessage()">提交留言</button>
+  </div>
+
+  <h2>留言列表</h2>
+  <div id="messages"></div>
+
+  <div class="pagination">
+    <button onclick="prevPage()">上一页</button>
+    <span id="page-number">1</span>
+    <button onclick="nextPage()">下一页</button>
+  </div>
+
+  <script>
+    let currentPage = 1;
+    const limit = 5;
+
+    async function loadMessages() {
+      const res = await fetch(`/functions/messages?page=${currentPage}&limit=${limit}`);
+      const data = await res.json();
+      const container = document.getElementById("messages");
+      container.innerHTML = data.map(msg => `
+        <div class="message">
+          <div class="name">${msg.name}</div>
+          <div>${msg.message}</div>
+          <div class="time">${new Date(msg.created_at).toLocaleString()}</div>
+        </div>
+      `).join("");
+
+      document.getElementById("page-number").innerText = currentPage;
+    }
+
+    async function submitMessage() {
+      const name = document.getElementById("name").value;
+      const message = document.getElementById("message").value;
+      if (!message) return alert("留言不能为空");
+
+      await fetch("/functions/messages", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name, message })
+      });
+
+      document.getElementById("message").value = "";
+      loadMessages();
+    }
+
+    function nextPage() {
+      currentPage++;
+      loadMessages();
+    }
+
+    function prevPage() {
+      if (currentPage > 1) {
+        currentPage--;
+        loadMessages();
+      }
+    }
+
+    setInterval(loadMessages, 3000);
+    loadMessages();
+  </script>
+</body>
+</html>
