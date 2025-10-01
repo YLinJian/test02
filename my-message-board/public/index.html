@@ -1,84 +1,360 @@
 <!DOCTYPE html>
-<html lang="zh">
+<html lang="zh-CN">
 <head>
-  <meta charset="UTF-8">
-  <title>留言板</title>
-  <style>
-    body { font-family: Arial; padding: 2rem; max-width: 600px; margin: auto; }
-    input, textarea { width: 100%; margin-bottom: 1rem; padding: 0.5rem; }
-    button { padding: 0.5rem 1rem; margin-right: 0.5rem; }
-    .message { border-bottom: 1px solid #ccc; padding: 0.5rem 0; }
-    .name { font-weight: bold; }
-    .time { font-size: 0.8rem; color: gray; }
-    .pagination { margin-top: 1rem; }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>地球与AI生图</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            background: linear-gradient(45deg, #000000, #1a1a2e, #16213e, #0f3460);
+            background-size: 400% 400%;
+            animation: gradientBG 15s ease infinite;
+            color: #fff;
+            font-family: 'Arial', sans-serif;
+            overflow: hidden;
+            height: 100vh;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        @keyframes gradientBG {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+        
+        #time-display {
+            position: absolute;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 28px;
+            z-index: 100;
+            text-shadow: 0 0 10px #ffffff, 0 0 20px #ffffff;
+            color: #ffffff;
+            background-color: rgba(0, 0, 0, 0.7);
+            padding: 15px 30px;
+            border-radius: 10px;
+            border: 1px solid #ffffff;
+            font-weight: bold;
+            letter-spacing: 2px;
+        }
+        
+        .content-container {
+            display: flex;
+            width: 100%;
+            height: 90vh;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 2%;
+            margin-top: 80px;
+        }
+        
+        #earth-container {
+            width: 50%;
+            height: 80vh;
+            z-index: 10;
+            position: relative;
+        }
+        
+        #trail-canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 5;
+            pointer-events: none;
+        }
+        
+        #external-site-container {
+            width: 45%;
+            height: 90vh;
+            z-index: 20;
+            background: rgba(0, 0, 0, 0.8);
+            border-radius: 10px;
+            overflow: hidden;
+            border: 2px solid #00ffff;
+            box-shadow: 0 0 20px #00ffff;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        #external-site-frame {
+            width: 1024px;
+            height: 1024px;
+            max-width: 100%;
+            max-height: 100%;
+            border: none;
+            transform: scale(0.8);
+        }
+        
+        .stars-background {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+            pointer-events: none;
+        }
+    </style>
 </head>
 <body>
-  <h1>留言板</h1>
-
-  <div>
-    <input type="text" id="name" placeholder="你的名字">
-    <textarea id="message" placeholder="写点什么..."></textarea>
-    <button onclick="submitMessage()">提交留言</button>
-  </div>
-
-  <h2>留言列表</h2>
-  <div id="messages"></div>
-
-  <div class="pagination">
-    <button onclick="prevPage()">上一页</button>
-    <span id="page-number">1</span>
-    <button onclick="nextPage()">下一页</button>
-  </div>
-
-  <script>
-    let currentPage = 1;
-    const limit = 5;
-
-    async function loadMessages() {
-      const res = await fetch(`/functions/messages?page=${currentPage}&limit=${limit}`);
-      const data = await res.json();
-      const container = document.getElementById("messages");
-      container.innerHTML = data.map(msg => `
-        <div class="message">
-          <div class="name">${msg.name}</div>
-          <div>${msg.message}</div>
-          <div class="time">${new Date(msg.created_at).toLocaleString()}</div>
+    <div id="time-display">正在加载时间...</div>
+    
+    <div class="content-container">
+        <div id="earth-container"></div>
+        
+        <div id="external-site-container">
+            <iframe id="external-site-frame" src="https://text-to-image-template.yljysl.workers.dev/" 
+                    title="AI 生图网站" loading="lazy"></iframe>
         </div>
-      `).join("");
+    </div>
+    
+    <canvas id="trail-canvas"></canvas>
+    <div class="stars-background" id="stars-background"></div>
 
-      document.getElementById("page-number").innerText = currentPage;
-    }
-
-    async function submitMessage() {
-      const name = document.getElementById("name").value;
-      const message = document.getElementById("message").value;
-      if (!message) return alert("留言不能为空");
-
-      await fetch("/functions/messages", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name, message })
-      });
-
-      document.getElementById("message").value = "";
-      loadMessages();
-    }
-
-    function nextPage() {
-      currentPage++;
-      loadMessages();
-    }
-
-    function prevPage() {
-      if (currentPage > 1) {
-        currentPage--;
-        loadMessages();
-      }
-    }
-
-    setInterval(loadMessages, 3000);
-    loadMessages();
-  </script>
+    <script>
+        // 实时时钟功能
+        function updateTime() {
+            const now = new Date();
+            const year = now.getFullYear();
+            const month = (now.getMonth() + 1).toString().padStart(2, '0');
+            const day = now.getDate().toString().padStart(2, '0');
+            const hours = now.getHours().toString().padStart(2, '0');
+            const minutes = now.getMinutes().toString().padStart(2, '0');
+            const seconds = now.getSeconds().toString().padStart(2, '0');
+            
+            document.getElementById('time-display').textContent = 
+                `${year}年${month}月${day}日 ${hours}:${minutes}:${seconds}`;
+        }
+        
+        // 初始化时钟
+        updateTime();
+        setInterval(updateTime, 1000);
+        
+        // 鼠标拖尾特效
+        const trailCanvas = document.getElementById('trail-canvas');
+        const trailCtx = trailCanvas.getContext('2d');
+        
+        // 设置画布尺寸
+        function resizeCanvas() {
+            trailCanvas.width = window.innerWidth;
+            trailCanvas.height = window.innerHeight;
+        }
+        
+        resizeCanvas();
+        window.addEventListener('resize', resizeCanvas);
+        
+        // 彩虹色数组
+        const rainbowColors = [
+            '#ff0000', '#ff7f00', '#ffff00', '#00ff00', 
+            '#0000ff', '#4b0082', '#8b00ff'
+        ];
+        
+        // 拖尾粒子系统
+        const particles = [];
+        const particleCount = 25;
+        
+        class Particle {
+            constructor(x, y) {
+                this.x = x;
+                this.y = y;
+                this.size = Math.random() * 4 + 2;
+                this.speedX = Math.random() * 3 - 1.5;
+                this.speedY = Math.random() * 3 - 1.5;
+                this.color = rainbowColors[Math.floor(Math.random() * rainbowColors.length)];
+                this.alpha = 1;
+                this.decay = Math.random() * 0.03 + 0.02;
+            }
+            
+            update() {
+                this.x += this.speedX;
+                this.y += this.speedY;
+                this.alpha -= this.decay;
+                return this.alpha > 0;
+            }
+            
+            draw() {
+                trailCtx.save();
+                trailCtx.globalAlpha = this.alpha;
+                trailCtx.fillStyle = this.color;
+                trailCtx.beginPath();
+                trailCtx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                trailCtx.fill();
+                trailCtx.restore();
+            }
+        }
+        
+        // 鼠标移动事件
+        let mouseX = 0;
+        let mouseY = 0;
+        
+        document.addEventListener('mousemove', (e) => {
+            mouseX = e.clientX;
+            mouseY = e.clientY;
+            
+            for (let i = 0; i < particleCount; i++) {
+                particles.push(new Particle(e.clientX, e.clientY));
+            }
+        });
+        
+        // 动画循环
+        function animateTrail() {
+            // 使用半透明黑色矩形创建拖尾效果
+            trailCtx.fillStyle = 'rgba(0, 0, 0, 0.1)';
+            trailCtx.fillRect(0, 0, trailCanvas.width, trailCanvas.height);
+            
+            // 更新和绘制所有粒子
+            for (let i = 0; i < particles.length; i++) {
+                if (particles[i].update()) {
+                    particles[i].draw();
+                } else {
+                    particles.splice(i, 1);
+                    i--;
+                }
+            }
+            
+            requestAnimationFrame(animateTrail);
+        }
+        
+        animateTrail();
+        
+        // 创建星星背景（使用纯CSS实现，避免遮挡地球）
+        function createStarsBackground() {
+            const starsContainer = document.getElementById('stars-background');
+            const starCount = 200;
+            
+            for (let i = 0; i < starCount; i++) {
+                const star = document.createElement('div');
+                star.style.position = 'absolute';
+                star.style.width = Math.random() * 3 + 'px';
+                star.style.height = star.style.width;
+                star.style.backgroundColor = '#fff';
+                star.style.borderRadius = '50%';
+                star.style.left = Math.random() * 100 + '%';
+                star.style.top = Math.random() * 100 + '%';
+                star.style.opacity = Math.random() * 0.7 + 0.3;
+                star.style.animation = `twinkle ${Math.random() * 5 + 3}s infinite alternate`;
+                
+                starsContainer.appendChild(star);
+            }
+            
+            // 添加闪烁动画
+            const style = document.createElement('style');
+            style.textContent = `
+                @keyframes twinkle {
+                    0% { opacity: 0.2; }
+                    100% { opacity: 1; }
+                }
+            `;
+            document.head.appendChild(style);
+        }
+        
+        createStarsBackground();
+        
+        // Three.js 地球模型
+        const earthContainer = document.getElementById('earth-container');
+        
+        // 场景、相机、渲染器
+        const scene = new THREE.Scene();
+        const camera = new THREE.PerspectiveCamera(45, 1, 0.1, 1000);
+        const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+        renderer.setSize(earthContainer.offsetWidth, earthContainer.offsetHeight);
+        earthContainer.appendChild(renderer.domElement);
+        
+        // 加载真实地球纹理
+        const textureLoader = new THREE.TextureLoader();
+        
+        // 使用NASA提供的真实地球纹理
+        const earthTexture = textureLoader.load('https://threejs.org/examples/textures/planets/earth_atmos_2048.jpg');
+        const earthBumpMap = textureLoader.load('https://threejs.org/examples/textures/planets/earth_normal_2048.jpg');
+        const earthSpecularMap = textureLoader.load('https://threejs.org/examples/textures/planets/earth_specular_2048.jpg');
+        
+        // 创建地球材质
+        const earthMaterial = new THREE.MeshPhongMaterial({
+            map: earthTexture,
+            bumpMap: earthBumpMap,
+            bumpScale: 0.05,
+            specularMap: earthSpecularMap,
+            specular: new THREE.Color(0x333333),
+            shininess: 5
+        });
+        
+        // 创建地球几何体
+        const earthGeometry = new THREE.SphereGeometry(1, 64, 64);
+        
+        // 创建地球网格
+        const earth = new THREE.Mesh(earthGeometry, earthMaterial);
+        scene.add(earth);
+        
+        // 添加云层
+        const cloudTexture = textureLoader.load('https://threejs.org/examples/textures/planets/earth_clouds_1024.png');
+        const cloudMaterial = new THREE.MeshPhongMaterial({
+            map: cloudTexture,
+            transparent: true,
+            opacity: 0.4
+        });
+        const cloudGeometry = new THREE.SphereGeometry(1.01, 64, 64);
+        const clouds = new THREE.Mesh(cloudGeometry, cloudMaterial);
+        scene.add(clouds);
+        
+        // 灯光
+        const ambientLight = new THREE.AmbientLight(0x333333);
+        scene.add(ambientLight);
+        
+        const directionalLight = new THREE.DirectionalLight(0xffffff, 1);
+        directionalLight.position.set(5, 3, 5);
+        scene.add(directionalLight);
+        
+        // 相机位置
+        camera.position.z = 3;
+        
+        // 窗口大小调整处理
+        function handleResize() {
+            const container = earthContainer;
+            const width = container.offsetWidth;
+            const height = container.offsetHeight;
+            
+            camera.aspect = width / height;
+            camera.updateProjectionMatrix();
+            renderer.setSize(width, height);
+            
+            // 调整AI生图窗口大小
+            const aiContainer = document.getElementById('external-site-container');
+            const aiFrame = document.getElementById('external-site-frame');
+            const containerHeight = aiContainer.offsetHeight;
+            const scale = Math.min(containerHeight / 1024, 1) * 0.8;
+            aiFrame.style.transform = `scale(${scale})`;
+        }
+        
+        window.addEventListener('resize', handleResize);
+        handleResize(); // 初始调用
+        
+        // 动画循环
+        function animateEarth() {
+            requestAnimationFrame(animateEarth);
+            
+            // 地球旋转
+            earth.rotation.y += 0.002;
+            clouds.rotation.y += 0.0025;
+            
+            renderer.render(scene, camera);
+        }
+        
+        animateEarth();
+    </script>
 </body>
 </html>
